@@ -1,0 +1,26 @@
+api-version: '1.13'
+depend: [
+]
+author: wysohn
+permissions:
+  tradegui:
+    description: root permission
+name: TradeGUI
+main: io.github.wysohn.tradegui.main.TradeGUI
+softdepend:
+  - RapidFramework
+  - Vault
+  - PlaceholderAPI
+  - ProtocolLib
+  - WorldGuard
+  - SmartInvs
+  - ScoreboardScreen
+  - Citizens
+version: 1.0.0
+commands:
+  tradegui:
+    aliases:
+      - tra
+    description: description
+authors: [
+]
