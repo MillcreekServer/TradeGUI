@@ -1,6 +1,7 @@
 package io.github.wysohn.tradegui.manager.gui;
 
 import fr.minuskube.inv.ClickableItem;
+import fr.minuskube.inv.InventoryListener;
 import fr.minuskube.inv.ItemClickData;
 import fr.minuskube.inv.SmartInventory;
 import fr.minuskube.inv.content.InventoryContents;
@@ -14,46 +15,51 @@ import io.github.wysohn.tradegui.main.TradeGUILangs;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class TradeGUI extends SmartInvAPI.GUI {
+public class GUIPairNode extends SmartInvAPI.GUI {
     private final PluginMain main;
-    private final TradeGUI otherGUI;
+    private GUIPairNode otherGUI;
 
-    private ItemStack traderHeadItem;
-    private ItemStack otherHeadItem;
+    private final ItemStack traderHeadItem;
+    private final ItemStack otherHeadItem;
 
-    private ItemStack[] traderContents;
-    private ItemStack[] otherContents;
+    private final ItemStack[] traderContents;
+    private final ItemStack[] otherContents;
 
-    private Map<String, Double> currencies;
+    private final Map<String, Double> currencies;
 
-    private Consumer<ItemClickData> updateHandle;
-    private Consumer<ItemClickData> tradeHandle;
+    private final CancelHandle cancelHandle;
+    private final TradeHandle tradeHandle;
 
     private boolean confirmed = false;
 
-    public TradeGUI(PluginMain main, TradeGUI otherGUI,
-                    ItemStack traderHeadItem,
-                    ItemStack otherHeadItem,
-                    ItemStack[] traderContents,
-                    ItemStack[] otherContents,
-                    Map<String, Double> currencies,
-                    Consumer<ItemClickData> updateHandle,
-                    Consumer<ItemClickData> tradeHandle) {
+    public GUIPairNode(PluginMain main,
+                       ItemStack traderHeadItem,
+                       ItemStack otherHeadItem,
+                       ItemStack[] traderContents,
+                       ItemStack[] otherContents,
+                       Map<String, Double> currencies,
+                       CancelHandle cancelHandle,
+                       TradeHandle tradeHandle) {
         this.main = main;
-        this.otherGUI = otherGUI;
         this.traderHeadItem = traderHeadItem;
         this.otherHeadItem = otherHeadItem;
         this.traderContents = traderContents;
         this.otherContents = otherContents;
         this.currencies = currencies;
-        this.updateHandle = updateHandle;
+        this.cancelHandle = cancelHandle;
         this.tradeHandle = tradeHandle;
+    }
+
+    public void setOtherGUI(GUIPairNode otherGUI) {
+        this.otherGUI = otherGUI;
     }
 
     @Override
@@ -61,6 +67,8 @@ public class TradeGUI extends SmartInvAPI.GUI {
         return SmartInventory.builder()
                 .id("Trade")
                 .provider(this)
+                .closeable(true)
+                .listener(new InventoryListener<>(InventoryCloseEvent.class, cancelHandle))
                 .build();
     }
 
@@ -119,7 +127,6 @@ public class TradeGUI extends SmartInvAPI.GUI {
                 }
 
                 updateContents(contents);
-                updateHandle.accept(data);
             }));
         });
         contents.applyRect(3, 1, 4, 3, (row, col) -> contents.setEditable(SlotPos.of(row, col), true));
@@ -133,7 +140,7 @@ public class TradeGUI extends SmartInvAPI.GUI {
 
         // trade button
         contents.set(3, 4, ClickableItem.from(new ItemStack(Material.GREEN_STAINED_GLASS_PANE), data ->
-                tradeHandle.accept(data)));
+                tradeHandle.accept(this, data)));
 
         // left confirm button
         contents.set(5, 0, ClickableItem.from(confirmItem(player, confirmed, true), data -> {
@@ -167,5 +174,13 @@ public class TradeGUI extends SmartInvAPI.GUI {
 
     public boolean isConfirmed() {
         return confirmed;
+    }
+
+    public interface CancelHandle extends Consumer<InventoryCloseEvent> {
+
+    }
+
+    public interface TradeHandle extends BiConsumer<GUIPairNode, ItemClickData> {
+
     }
 }
