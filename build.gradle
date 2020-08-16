@@ -12,6 +12,9 @@ plugins {
     id 'groovy'
 }
 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 ext {
     id = project.name
     version = '1.0.0'
@@ -233,7 +236,7 @@ dependencies {
     compile fileTree(dir: "libs", includes: ['*.jar'])
 
     implementation 'org.spigotmc:spigot-api:1.16.+'
-    implementation "io.github.wysohn:RapidFramework:2.13.0"
+    implementation "io.github.wysohn:RapidFramework:2.13.13"
 
     testCompile 'junit:junit:4.+'
     testCompile 'org.mockito:mockito-core:1.9.5'

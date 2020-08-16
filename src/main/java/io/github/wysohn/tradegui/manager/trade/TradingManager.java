@@ -62,4 +62,8 @@ public class TradingManager extends PluginMain.Manager implements Listener {
         pair.begin();
         return true;
     }
+
+    public GUIPair getCurrentTradeGUI(UUID uuid) {
+        return currentTrades.get(uuid);
+    }
 }

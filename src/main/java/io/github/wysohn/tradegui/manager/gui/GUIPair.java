@@ -115,4 +115,44 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
 
         onTradeEnd.run();
     }
+
+    public ITrader getTrader1() {
+        return trader1;
+    }
+
+    public ITrader getTrader2() {
+        return trader2;
+    }
+
+    public GUIPairNode getTrader1GUI() {
+        return trader1GUI;
+    }
+
+    public GUIPairNode getTrader2GUI() {
+        return trader2GUI;
+    }
+
+    public ItemStack[] getTrader1RawContents() {
+        return trader1RawContents;
+    }
+
+    public ItemStack[] getTrader2RawContents() {
+        return trader2RawContents;
+    }
+
+    public Map<String, Double> getTrader1Currencies() {
+        return trader1Currencies;
+    }
+
+    public Map<String, Double> getTrader2Currencies() {
+        return trader2Currencies;
+    }
+
+    public boolean isTrader1Ready() {
+        return trader1Ready;
+    }
+
+    public boolean isTrader2Ready() {
+        return trader2Ready;
+    }
 }

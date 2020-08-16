@@ -49,6 +49,7 @@ public class TradeGUIBridge extends BukkitPluginBridge {
                 .withExternalAPIs("SmartInv", SmartInvAPI.class)
                 .withManagers(new UserManager(PluginMain.Manager.NORM_PRIORITY))
                 .withManagers(new TradingManager(PluginMain.Manager.NORM_PRIORITY))
+                .withMediators(new TradeMediator())
                 .build();
     }
 
