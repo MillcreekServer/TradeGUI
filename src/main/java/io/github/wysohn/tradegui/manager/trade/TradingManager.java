@@ -4,6 +4,7 @@ import io.github.wysohn.rapidframework2.core.interfaces.IPluginObject;
 import io.github.wysohn.rapidframework2.core.main.PluginMain;
 import io.github.wysohn.tradegui.manager.gui.GUIPair;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.HashMap;

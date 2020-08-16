@@ -232,7 +232,7 @@ sourceSets {
 dependencies {
     compile fileTree(dir: "libs", includes: ['*.jar'])
 
-    implementation 'org.spigotmc:spigot-api:1.15.+'
+    implementation 'org.spigotmc:spigot-api:1.16.+'
     implementation "io.github.wysohn:RapidFramework:2.13.0"
 
     testCompile 'junit:junit:4.+'
