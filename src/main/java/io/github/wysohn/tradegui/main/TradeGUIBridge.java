@@ -4,11 +4,25 @@ import io.github.wysohn.rapidframework2.bukkit.main.AbstractBukkitPlugin;
 import io.github.wysohn.rapidframework2.bukkit.main.BukkitPluginBridge;
 import io.github.wysohn.rapidframework2.core.interfaces.plugin.IPluginManager;
 import io.github.wysohn.rapidframework2.core.main.PluginMain;
+import io.github.wysohn.rapidframework2.core.manager.command.InvalidArgumentException;
 import io.github.wysohn.rapidframework2.core.manager.command.SubCommand;
+import io.github.wysohn.rapidframework2.core.manager.command.TabCompleter;
+import io.github.wysohn.rapidframework2.core.manager.lang.DefaultLangs;
+import io.github.wysohn.tradegui.api.GemsEconomyAPI;
 import io.github.wysohn.tradegui.api.SmartInvAPI;
+import io.github.wysohn.tradegui.manager.TradeMediator;
+import io.github.wysohn.tradegui.manager.trade.TradingManager;
+import io.github.wysohn.tradegui.manager.user.User;
+import io.github.wysohn.tradegui.manager.user.UserManager;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 
 import java.io.File;
+import java.lang.ref.Reference;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 public class TradeGUIBridge extends BukkitPluginBridge {
@@ -30,12 +44,83 @@ public class TradeGUIBridge extends BukkitPluginBridge {
     @Override
     protected PluginMain init(PluginMain.Builder builder) {
         return builder
+                .addLangs(TradeGUILangs.values())
+                .withExternalAPIs("GemsEconomy", GemsEconomyAPI.class)
                 .withExternalAPIs("SmartInv", SmartInvAPI.class)
+                .withManagers(new UserManager(PluginMain.Manager.NORM_PRIORITY))
+                .withManagers(new TradingManager(PluginMain.Manager.NORM_PRIORITY))
                 .build();
     }
 
     @Override
     protected void registerCommands(List<SubCommand> list) {
-        //TODO add commands
+        list.add(new SubCommand.Builder(getMain(), "request", 1)
+                .withAlias("r")
+                .withDescription(TradeGUILangs.Command_Request_Desc)
+                .addUsage(TradeGUILangs.Command_Request_Usage)
+                .addArgumentMapper(0, s -> Optional.ofNullable(Bukkit.getPlayer(s))
+                        .orElseThrow(() -> new InvalidArgumentException(DefaultLangs.General_NoSuchPlayer, (sen, man) ->
+                                man.addString(s))))
+                .addTabCompleter(0, TabCompleter.PLAYER)
+                .action((sender, args) -> {
+                    User target = args.get(0)
+                            .map(Player.class::cast)
+                            .map(Entity::getUniqueId)
+                            .flatMap(this::getUser)
+                            .orElse(null);
+                    if (target == null)
+                        return true;
+
+                    getMain().getMediator(TradeMediator.class).ifPresent(tradeMediator -> {
+                        getUser(sender.getUuid()).ifPresent(user -> {
+                            if (tradeMediator.requestTrade(user, target)) {
+                                getMain().lang().sendMessage(user, TradeGUILangs.Command_Request_Sent);
+                            } else {
+                                getMain().lang().sendMessage(user, TradeGUILangs.Trade_Request_AlreadyTrading);
+                            }
+                        });
+                    });
+                    return true;
+                })
+                .create());
+
+        list.add(new SubCommand.Builder(getMain(), "accept", 0)
+                .withAlias("a")
+                .withDescription(TradeGUILangs.Command_Accept_Desc)
+                .addUsage(TradeGUILangs.Command_Accept_Usage)
+                .action((sender, args) -> {
+                    getMain().getMediator(TradeMediator.class).ifPresent(tradeMediator -> {
+                        getUser(sender.getUuid()).ifPresent(user -> {
+                            if (!tradeMediator.acceptTrade(user)) {
+                                getMain().lang().sendMessage(user, TradeGUILangs.Trade_Request_NoPendings);
+                            }
+                        });
+                    });
+                    return true;
+                })
+                .create());
+
+        list.add(new SubCommand.Builder(getMain(), "deny", 0)
+                .withAlias("d")
+                .withDescription(TradeGUILangs.Command_Deny_Desc)
+                .addUsage(TradeGUILangs.Command_Deny_Usage)
+                .action((sender, args) -> {
+                    getMain().getMediator(TradeMediator.class).ifPresent(tradeMediator -> {
+                        getUser(sender.getUuid()).ifPresent(user -> {
+                            if (tradeMediator.denyTrade(user)) {
+                                getMain().lang().sendMessage(user, TradeGUILangs.Trade_Request_Denied);
+                            } else {
+                                getMain().lang().sendMessage(user, TradeGUILangs.Trade_Request_NoPendings);
+                            }
+                        });
+                    });
+                    return true;
+                })
+                .create());
+    }
+
+    private Optional<User> getUser(UUID uuid) {
+        return getMain().getManager(UserManager.class)
+                .flatMap(userManager -> userManager.get(uuid).map(Reference::get));
     }
 }

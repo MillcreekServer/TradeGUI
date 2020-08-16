@@ -9,10 +9,7 @@ import io.github.wysohn.tradegui.manager.trade.TradingItemStack;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
 public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandle {
     private final PluginMain main;
@@ -23,11 +20,11 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
     private final GUIPairNode trader1GUI;
     private final GUIPairNode trader2GUI;
 
-    private ItemStack[] trader1RawContents;
-    private ItemStack[] trader2RawContents;
+    private final ItemStack[] trader1RawContents = new ItemStack[GUIPairNode.CONTENTS_ROW * GUIPairNode.CONTENTS_COL];
+    private final ItemStack[] trader2RawContents = new ItemStack[GUIPairNode.CONTENTS_ROW * GUIPairNode.CONTENTS_COL];
 
-    private Map<String, Double> trader1Currencies;
-    private Map<String, Double> trader2Currencies;
+    private final Map<String, Double> trader1Currencies = new HashMap<>();
+    private final Map<String, Double> trader2Currencies = new HashMap<>();
 
     private boolean trader1Ready = false;
     private boolean trader2Ready = false;
@@ -67,6 +64,11 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
     public void begin() {
         trader1.openTradeGUI(trader1GUI.getGUI());
         trader2.openTradeGUI(trader2GUI.getGUI());
+    }
+
+    public void cancel() {
+        trader1.closeTradeGUI(trader1GUI.getGUI());
+        trader2.closeTradeGUI(trader2GUI.getGUI());
     }
 
     private Collection<ITradeContent> flat(Map<String, Double> currencies, ItemStack[] itemStacks) {
@@ -110,5 +112,7 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
         // trade failed. Give items back to original owners
         trader1.give(flat(trader1Currencies, trader1RawContents));
         trader2.give(flat(trader2Currencies, trader2RawContents));
+
+        onTradeEnd.run();
     }
 }

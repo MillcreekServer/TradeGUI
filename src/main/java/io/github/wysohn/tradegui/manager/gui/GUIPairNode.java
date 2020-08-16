@@ -24,6 +24,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class GUIPairNode extends SmartInvAPI.GUI {
+    public static final int CONTENTS_ROW = 2;
+    public static final int CONTENTS_COL = 3;
+
     private final PluginMain main;
     private GUIPairNode otherGUI;
 
@@ -81,11 +84,11 @@ public class GUIPairNode extends SmartInvAPI.GUI {
     }
 
     private int toLeftContentIndex(int row, int col) {
-        return 3 * (row - 3) + (col - 1);
+        return CONTENTS_COL * (row - 3) + (col - 1);
     }
 
     private int toRightContentIndex(int row, int col) {
-        return 3 * (row - 3) + (col - 5);
+        return CONTENTS_COL * (row - 3) + (col - 5);
     }
 
     private void updateContents(InventoryContents inventoryContents) {
@@ -119,6 +122,7 @@ public class GUIPairNode extends SmartInvAPI.GUI {
             itemStack = itemStack == null ? new ItemStack(Material.AIR) : itemStack;
             contents.set(row, col, ClickableItem.from(itemStack, (data) -> {
                 if (confirmed) {
+                    // can't change anymore once confirmed
                     Optional.of(data)
                             .map(ItemClickData::getEvent)
                             .map(Cancellable.class::cast)

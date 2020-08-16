@@ -21,6 +21,22 @@ public enum TradeGUILangs implements Lang {
     GUI_Confirmed_Other_Lore("&7The contents cannot be changed anymore.",
             "&7You are safe to click trade button,",
             "&dor simply close the GUI to end the trade."),
+
+    Command_Request_Desc("&7Request trade with the specified player."),
+    Command_Request_Usage("&d/... r <player> &8: &7Offer trade for <player>"),
+    Command_Request_Sent("&aRequest sent."),
+
+    Command_Accept_Desc("&7Accept and start the trade."),
+    Command_Accept_Usage("&d/... a &8: &7Start trading."),
+
+    Command_Deny_Desc("&7Deny the trade request."),
+    Command_Deny_Usage("&d/... a &8: &7Deny the trade offer."),
+
+    Trade_Request_AlreadyTrading("&cAnother trade is already under progress."),
+    Trade_Request_NoPendings("&cYou have no trade requests."),
+    Trade_Request_TimeLeft("&6${integer} seconds &7left."),
+    Trade_Request_Timeout("&7Request timeout."),
+    Trade_Request_Denied("&7Trade denied."),
     ;
 
     private final String[] def;
