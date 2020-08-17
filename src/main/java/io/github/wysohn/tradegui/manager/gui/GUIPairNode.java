@@ -14,24 +14,30 @@ import io.github.wysohn.tradegui.api.SmartInvAPI;
 import io.github.wysohn.tradegui.main.TradeGUILangs;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class GUIPairNode extends SmartInvAPI.GUI {
+public class GUIPairNode extends SmartInvAPI.GUI implements Consumer<InventoryClickEvent> {
     public static final int CONTENTS_ROW = 2;
     public static final int CONTENTS_COL = 3;
+
+    public static final SlotPos LEFT_FROM = SlotPos.of(3, 1);
+    public static final SlotPos RIGHT_FROM = SlotPos.of(3, 5);
 
     private final PluginMain main;
     private GUIPairNode otherGUI;
 
     private final ItemStack traderHeadItem;
     private final ItemStack otherHeadItem;
+    private final ItemStack tradeButtonItem;
 
     private final ItemStack[] traderContents;
     private final ItemStack[] otherContents;
@@ -41,11 +47,14 @@ public class GUIPairNode extends SmartInvAPI.GUI {
     private final CancelHandle cancelHandle;
     private final TradeHandle tradeHandle;
 
+    private final SmartInventory inventory;
+
     private boolean confirmed = false;
 
     public GUIPairNode(PluginMain main,
                        ItemStack traderHeadItem,
                        ItemStack otherHeadItem,
+                       ItemStack tradeButtonItem,
                        ItemStack[] traderContents,
                        ItemStack[] otherContents,
                        Map<String, Double> currencies,
@@ -54,11 +63,22 @@ public class GUIPairNode extends SmartInvAPI.GUI {
         this.main = main;
         this.traderHeadItem = traderHeadItem;
         this.otherHeadItem = otherHeadItem;
+        this.tradeButtonItem = tradeButtonItem;
         this.traderContents = traderContents;
         this.otherContents = otherContents;
         this.currencies = currencies;
         this.cancelHandle = cancelHandle;
         this.tradeHandle = tradeHandle;
+
+        this.inventory = SmartInventory.builder()
+                .id(UUID.randomUUID().toString())
+                .title("Trade")
+                .provider(this)
+                .closeable(true)
+                .listener(new InventoryListener<>(InventoryCloseEvent.class, cancelHandle))
+                .listener(new InventoryListener<>(InventoryClickEvent.class, this))
+                .size(6, 9)
+                .build();
     }
 
     public void setOtherGUI(GUIPairNode otherGUI) {
@@ -66,13 +86,8 @@ public class GUIPairNode extends SmartInvAPI.GUI {
     }
 
     @Override
-    protected SmartInventory init() {
-        return SmartInventory.builder()
-                .id("Trade")
-                .provider(this)
-                .closeable(true)
-                .listener(new InventoryListener<>(InventoryCloseEvent.class, cancelHandle))
-                .build();
+    public SmartInventory getGUI() {
+        return inventory;
     }
 
     @Override
@@ -81,6 +96,8 @@ public class GUIPairNode extends SmartInvAPI.GUI {
 
         contents.fillBorders(ClickableItem.empty(new ItemStack(Material.BLACK_STAINED_GLASS_PANE)));
         contents.fillColumn(4, ClickableItem.empty(new ItemStack(Material.BLACK_STAINED_GLASS_PANE)));
+
+        update(player, contents);
     }
 
     private int toLeftContentIndex(int row, int col) {
@@ -89,15 +106,6 @@ public class GUIPairNode extends SmartInvAPI.GUI {
 
     private int toRightContentIndex(int row, int col) {
         return CONTENTS_COL * (row - 3) + (col - 5);
-    }
-
-    private void updateContents(InventoryContents inventoryContents) {
-        inventoryContents.applyRect(3, 1, 4, 3, (row, col) -> {
-            int index = toLeftContentIndex(row, col);
-            traderContents[index] = null;
-            inventoryContents.get(row, col)
-                    .ifPresent(clickableItem -> traderContents[index] = clickableItem.getItem());
-        });
     }
 
     @Override
@@ -117,33 +125,34 @@ public class GUIPairNode extends SmartInvAPI.GUI {
         //TODO update lore to show currencies
 
         //3,1 -> 4,3  left contents
-        contents.applyRect(3, 1, 4, 3, (row, col) -> {
-            ItemStack itemStack = otherContents[toLeftContentIndex(row, col)];
-            itemStack = itemStack == null ? new ItemStack(Material.AIR) : itemStack;
-            contents.set(row, col, ClickableItem.from(itemStack, (data) -> {
-                if (confirmed) {
-                    // can't change anymore once confirmed
-                    Optional.of(data)
-                            .map(ItemClickData::getEvent)
-                            .map(Cancellable.class::cast)
-                            .ifPresent(cancellable -> cancellable.setCancelled(true));
-                    return;
-                }
-
-                updateContents(contents);
-            }));
-        });
-        contents.applyRect(3, 1, 4, 3, (row, col) -> contents.setEditable(SlotPos.of(row, col), true));
+        contents.applyRect(LEFT_FROM.getRow(),
+                LEFT_FROM.getColumn(),
+                LEFT_FROM.getRow() + CONTENTS_ROW - 1,
+                LEFT_FROM.getColumn() + CONTENTS_COL - 1,
+                (row, col) -> {
+                    ItemStack itemStack = traderContents[toLeftContentIndex(row, col)];
+                    itemStack = itemStack == null ? new ItemStack(Material.AIR) : itemStack;
+                    contents.set(row, col, ClickableItem.empty(itemStack));
+                });
+        contents.applyRect(LEFT_FROM.getRow(),
+                LEFT_FROM.getColumn(),
+                LEFT_FROM.getRow() + CONTENTS_ROW - 1,
+                LEFT_FROM.getColumn() + CONTENTS_COL - 1,
+                (row, col) -> contents.setEditable(SlotPos.of(row, col), true));
 
         //3,5 -> 4,7  right contents
-        contents.applyRect(3, 5, 4, 7, (row, col) -> {
-            ItemStack itemStack = otherContents[toRightContentIndex(row, col)];
-            itemStack = itemStack == null ? new ItemStack(Material.AIR) : itemStack;
-            contents.set(row, col, ClickableItem.empty(itemStack));
-        });
+        contents.applyRect(RIGHT_FROM.getRow(),
+                RIGHT_FROM.getColumn(),
+                RIGHT_FROM.getRow() + CONTENTS_ROW - 1,
+                RIGHT_FROM.getColumn() + CONTENTS_COL - 1,
+                (row, col) -> {
+                    ItemStack itemStack = otherContents[toRightContentIndex(row, col)];
+                    itemStack = itemStack == null ? new ItemStack(Material.AIR) : itemStack;
+                    contents.set(row, col, ClickableItem.empty(itemStack));
+                });
 
         // trade button
-        contents.set(3, 4, ClickableItem.from(new ItemStack(Material.GREEN_STAINED_GLASS_PANE), data ->
+        contents.set(3, 4, ClickableItem.from(tradeButtonItem, data ->
                 tradeHandle.accept(this, data)));
 
         // left confirm button
@@ -156,13 +165,36 @@ public class GUIPairNode extends SmartInvAPI.GUI {
         contents.set(5, 8, ClickableItem.empty(confirmItem(player, otherGUI.confirmed, false)));
     }
 
+    private boolean withInRange(int slot) {
+        int from = LEFT_FROM.getRow() * 9 + LEFT_FROM.getColumn();
+        int to = (LEFT_FROM.getRow() + CONTENTS_ROW - 1) * 9 + (LEFT_FROM.getColumn() + CONTENTS_COL - 1);
+        return from <= slot && slot <= to;
+    }
+
+    @Override
+    public void accept(InventoryClickEvent event) {
+        if (event.getAction() != InventoryAction.PLACE_ALL
+                && event.getAction() != InventoryAction.PICKUP_ALL) {
+            event.setCancelled(true);
+            return;
+        }
+
+        if (!confirmed && withInRange(event.getSlot())) {
+            int index = toLeftContentIndex(event.getSlot() / 9, event.getSlot() % 9);
+            Optional.of(event)
+                    .map(InventoryClickEvent::getCursor)
+                    .map(ItemStack::clone)
+                    .ifPresent(itemStack -> traderContents[index] = itemStack);
+        }
+    }
+
     private ItemStack confirmItem(Player player, boolean confirm, boolean trader) {
         Lang title_confirm = trader ? TradeGUILangs.GUI_Confirm_Trader_Title : TradeGUILangs.GUI_Confirm_Other_Title;
         Lang lore_confirm = trader ? TradeGUILangs.GUI_Confirm_Trader_Lore : TradeGUILangs.GUI_Confirm_Other_Lore;
         Lang title_confirmed = trader ? TradeGUILangs.GUI_Confirmed_Trader_Title : TradeGUILangs.GUI_Confirmed_Other_Title;
         Lang lore_confirmed = trader ? TradeGUILangs.GUI_Confirmed_Trader_Lore : TradeGUILangs.GUI_Confirmed_Other_Lore;
 
-        ItemStack itemStack = new ItemStack(confirmed ? Material.WRITTEN_BOOK : Material.WRITABLE_BOOK);
+        ItemStack itemStack = new ItemStack(confirm ? Material.WRITTEN_BOOK : Material.WRITABLE_BOOK);
         InventoryUtil.parseFirstToItemTitle(main.lang(),
                 BukkitWrapper.player(player),
                 confirm ? title_confirmed : title_confirm,

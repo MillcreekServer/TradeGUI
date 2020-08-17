@@ -22,6 +22,18 @@ public enum TradeGUILangs implements Lang {
             "&7You are safe to click trade button,",
             "&dor simply close the GUI to end the trade."),
 
+    GUI_Trade_NotReady_Title("&dClick to finalize the trade."),
+    GUI_Trade_NotReady_Lore1("&eYou must confirm first."),
+    GUI_Trade_NotReady_Lore2("&aYou are now good to go.",
+            "",
+            "&cWARNING) Once you confirmed, you cannot change the contents.",
+            "&cThis applies to the other too, so make sure the other user confirmed before trade."),
+
+    GUI_Trade_Ready_Title("&aTrade finalized."),
+    GUI_Trade_Ready_Lore("&eWaiting for the other user...",
+            "",
+            "&cIf something is wrong, close the trade GUI immediately."),
+
     Command_Request_Desc("&7Request trade with the specified player."),
     Command_Request_Usage("&d/... r <player> &8: &7Offer trade for <player>"),
     Command_Request_Sent("&aRequest sent."),

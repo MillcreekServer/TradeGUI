@@ -1,21 +1,26 @@
 package io.github.wysohn.tradegui.manager.gui;
 
 import fr.minuskube.inv.ItemClickData;
+import io.github.wysohn.rapidframework2.bukkit.utils.InventoryUtil;
+import io.github.wysohn.rapidframework2.core.interfaces.entity.ICommandSender;
 import io.github.wysohn.rapidframework2.core.main.PluginMain;
 import io.github.wysohn.tradegui.api.GemsEconomyAPI;
+import io.github.wysohn.tradegui.main.TradeGUILangs;
 import io.github.wysohn.tradegui.manager.trade.ITradeContent;
 import io.github.wysohn.tradegui.manager.trade.ITrader;
 import io.github.wysohn.tradegui.manager.trade.TradingItemStack;
+import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 
 public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandle {
     private final PluginMain main;
     private final ITrader trader1;
     private final ITrader trader2;
-    private final Runnable onTradeEnd;
+    private final BiConsumer<GUIPair, GUIPairNode> onTradeEnd;
 
     private final GUIPairNode trader1GUI;
     private final GUIPairNode trader2GUI;
@@ -26,10 +31,13 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
     private final Map<String, Double> trader1Currencies = new HashMap<>();
     private final Map<String, Double> trader2Currencies = new HashMap<>();
 
+    private ItemStack trader1TradeButton;
+    private ItemStack trader2TradeButton;
+
     private boolean trader1Ready = false;
     private boolean trader2Ready = false;
 
-    public GUIPair(PluginMain main, ITrader trader1, ITrader trader2, Runnable onTradeEnd) {
+    public GUIPair(PluginMain main, ITrader trader1, ITrader trader2, BiConsumer<GUIPair, GUIPairNode> onTradeEnd) {
         this.main = main;
         this.trader1 = trader1;
         this.trader2 = trader2;
@@ -38,9 +46,15 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
         ItemStack head1 = trader1.getHeadItem();
         ItemStack head2 = trader2.getHeadItem();
 
+        trader1TradeButton = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE);
+        updateTradeButtomItem(trader1, trader1TradeButton, false, false);
+        trader2TradeButton = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE);
+        updateTradeButtomItem(trader1, trader1TradeButton, false, false);
+
         trader1GUI = new GUIPairNode(main,
                 head1,
                 head2,
+                trader1TradeButton,
                 trader1RawContents,
                 trader2RawContents,
                 trader1Currencies,
@@ -51,6 +65,7 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
         trader2GUI = new GUIPairNode(main,
                 head2,
                 head1,
+                trader2TradeButton,
                 trader2RawContents,
                 trader1RawContents,
                 trader2Currencies,
@@ -64,11 +79,6 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
     public void begin() {
         trader1.openTradeGUI(trader1GUI.getGUI());
         trader2.openTradeGUI(trader2GUI.getGUI());
-    }
-
-    public void cancel() {
-        trader1.closeTradeGUI(trader1GUI.getGUI());
-        trader2.closeTradeGUI(trader2GUI.getGUI());
     }
 
     private Collection<ITradeContent> flat(Map<String, Double> currencies, ItemStack[] itemStacks) {
@@ -86,14 +96,48 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
         return contents;
     }
 
+    private void updateTradeButtomItem(ICommandSender sender, ItemStack item,
+                                       boolean confirmed, boolean ready) {
+        if (confirmed && ready) {
+            InventoryUtil.parseFirstToItemTitle(main.lang(),
+                    sender,
+                    TradeGUILangs.GUI_Trade_Ready_Title,
+                    item);
+            InventoryUtil.parseToItemLores(main.lang(),
+                    sender,
+                    TradeGUILangs.GUI_Trade_Ready_Lore,
+                    item);
+        } else if (confirmed) {
+            InventoryUtil.parseFirstToItemTitle(main.lang(),
+                    sender,
+                    TradeGUILangs.GUI_Trade_NotReady_Title,
+                    item);
+            InventoryUtil.parseToItemLores(main.lang(),
+                    sender,
+                    TradeGUILangs.GUI_Trade_NotReady_Lore2,
+                    item);
+        } else {
+            InventoryUtil.parseFirstToItemTitle(main.lang(),
+                    sender,
+                    TradeGUILangs.GUI_Trade_NotReady_Title,
+                    item);
+            InventoryUtil.parseToItemLores(main.lang(),
+                    sender,
+                    TradeGUILangs.GUI_Trade_NotReady_Lore1,
+                    item);
+        }
+    }
+
     @Override
     public void accept(GUIPairNode node, ItemClickData itemClickData) {
         if (node == trader1GUI) {
-            if (node.isConfirmed())
-                trader1Ready = !trader1Ready;
+            trader1Ready = !trader1Ready && node.isConfirmed();
+
+            updateTradeButtomItem(trader1, trader1TradeButton, node.isConfirmed(), trader1Ready);
         } else if (node == trader2GUI) {
-            if (node.isConfirmed())
-                trader2Ready = !trader2Ready;
+            trader2Ready = !trader2Ready && node.isConfirmed();
+
+            updateTradeButtomItem(trader2, trader2TradeButton, node.isConfirmed(), trader2Ready);
         } else {
             throw new RuntimeException("Unexpected node.");
         }
@@ -103,7 +147,7 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
             trader1.give(flat(trader2Currencies, trader2RawContents));
             trader2.give(flat(trader1Currencies, trader1RawContents));
 
-            onTradeEnd.run();
+            onTradeEnd.accept(this, node);
         }
     }
 
@@ -113,7 +157,8 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
         trader1.give(flat(trader1Currencies, trader1RawContents));
         trader2.give(flat(trader2Currencies, trader2RawContents));
 
-        onTradeEnd.run();
+        onTradeEnd.accept(this, trader1GUI);
+        onTradeEnd.accept(this, trader2GUI);
     }
 
     public ITrader getTrader1() {

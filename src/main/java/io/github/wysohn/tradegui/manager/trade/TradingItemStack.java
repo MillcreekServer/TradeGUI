@@ -16,6 +16,9 @@ public class TradingItemStack implements ITradeContent {
 
     @Override
     public void visit(ITrader trader) {
+        if (itemStack == null)
+            return;
+
         if (trader instanceof User) {
             Player player = ((User) trader).getSender();
             Map<Integer, ItemStack> leftOvers = player.getInventory().addItem(itemStack);

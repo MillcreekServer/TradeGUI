@@ -26,16 +26,6 @@ public class SmartInvAPI extends ExternalAPI {
     }
 
     public static abstract class GUI implements InventoryProvider {
-        private SmartInventory inventory;
-
-        public GUI() {
-            inventory = init();
-        }
-
-        protected abstract SmartInventory init();
-
-        public SmartInventory getGUI() {
-            return inventory;
-        }
+        public abstract SmartInventory getGUI();
     }
 }

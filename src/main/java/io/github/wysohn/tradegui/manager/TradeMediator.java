@@ -13,7 +13,7 @@ public class TradeMediator extends PluginMain.Mediator {
 
     @Override
     public void enable() throws Exception {
-        offerScheduler = new OfferScheduler(main().task());
+        offerScheduler = new OfferScheduler(main().task(), 60 * 1000L);
         tradingManager = main().getManager(TradingManager.class).get();
     }
 

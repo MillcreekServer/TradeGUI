@@ -67,6 +67,7 @@ public class TradeGUIBridge extends BukkitPluginBridge {
                     User target = args.get(0)
                             .map(Player.class::cast)
                             .map(Entity::getUniqueId)
+                            .filter(uuid -> !uuid.equals(sender.getUuid()))
                             .flatMap(this::getUser)
                             .orElse(null);
                     if (target == null)

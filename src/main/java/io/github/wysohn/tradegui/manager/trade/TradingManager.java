@@ -37,8 +37,7 @@ public class TradingManager extends PluginMain.Manager implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         Optional.of(event.getPlayer().getUniqueId())
-                .map(currentTrades::get)
-                .ifPresent(GUIPair::cancel);
+                .ifPresent(currentTrades::remove);
     }
 
     public boolean isTrading(ITrader iTrader) {
@@ -52,9 +51,12 @@ public class TradingManager extends PluginMain.Manager implements Listener {
         if (isTrading(initiated) || isTrading(accepted))
             return false;
 
-        GUIPair pair = new GUIPair(main(), initiated, accepted, () -> {
+        GUIPair pair = new GUIPair(main(), initiated, accepted, (context, guiNode) -> {
             currentTrades.remove(initiated.getUuid());
             currentTrades.remove(accepted.getUuid());
+
+            initiated.closeTradeGUI(context.getTrader1GUI().getGUI());
+            accepted.closeTradeGUI(context.getTrader2GUI().getGUI());
         });
 
         currentTrades.put(initiated.getUuid(), pair);

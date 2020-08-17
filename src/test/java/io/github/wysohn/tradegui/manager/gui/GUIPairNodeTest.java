@@ -58,6 +58,7 @@ public class GUIPairNodeTest {
 
         ItemStack head1 = new ItemStack(Material.PLAYER_HEAD);
         ItemStack head2 = new ItemStack(Material.PLAYER_HEAD);
+        ItemStack button = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
         content1 = new ItemStack[GUIPairNode.CONTENTS_ROW * GUIPairNode.CONTENTS_ROW];
         content2 = new ItemStack[GUIPairNode.CONTENTS_ROW * GUIPairNode.CONTENTS_ROW];
         currencies = new HashMap<>();
@@ -78,6 +79,7 @@ public class GUIPairNodeTest {
         node = new GUIPairNode(mockMain,
                 head1,
                 head2,
+                button,
                 content1,
                 content2,
                 currencies,

@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class User extends BukkitPlayer implements ITrader {
-    private ItemStack headItem = new ItemStack(Material.PLAYER_HEAD);
+    private transient ItemStack headItem;
 
     private User() {
         super(null);
@@ -26,6 +26,9 @@ public class User extends BukkitPlayer implements ITrader {
 
     @Override
     public ItemStack getHeadItem() {
+        if (headItem == null)
+            headItem = new ItemStack(Material.PLAYER_HEAD);
+
         ItemMeta meta = headItem.getItemMeta();
         Optional.ofNullable(meta)
                 .filter(SkullMeta.class::isInstance)
