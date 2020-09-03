@@ -1,4 +1,4 @@
-package io.github.wysohn.tradegui.manager.gui;
+package io.github.wysohn.tradegui.manager.gui.trade;
 
 import fr.minuskube.inv.ItemClickData;
 import io.github.wysohn.rapidframework2.bukkit.utils.InventoryUtil;
@@ -14,13 +14,14 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
-public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandle {
+public class GUIPair implements GUIPairNode.CloseHandle, GUIPairNode.TradeHandle {
     private final PluginMain main;
     private final ITrader trader1;
     private final ITrader trader2;
-    private final BiConsumer<GUIPair, GUIPairNode> onTradeEnd;
+    private final Consumer<GUIPair> onTradeEnd;
 
     private final GUIPairNode trader1GUI;
     private final GUIPairNode trader2GUI;
@@ -31,13 +32,15 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
     private final Map<String, Double> trader1Currencies = new HashMap<>();
     private final Map<String, Double> trader2Currencies = new HashMap<>();
 
-    private ItemStack trader1TradeButton;
-    private ItemStack trader2TradeButton;
+    private final ItemStack trader1TradeButton;
+    private final ItemStack trader2TradeButton;
 
     private boolean trader1Ready = false;
     private boolean trader2Ready = false;
 
-    public GUIPair(PluginMain main, ITrader trader1, ITrader trader2, BiConsumer<GUIPair, GUIPairNode> onTradeEnd) {
+    private boolean end = false;
+
+    public GUIPair(PluginMain main, ITrader trader1, ITrader trader2, Consumer<GUIPair> onTradeEnd) {
         this.main = main;
         this.trader1 = trader1;
         this.trader2 = trader2;
@@ -49,7 +52,10 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
         trader1TradeButton = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE);
         updateTradeButtomItem(trader1, trader1TradeButton, false, false);
         trader2TradeButton = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE);
-        updateTradeButtomItem(trader1, trader1TradeButton, false, false);
+        updateTradeButtomItem(trader2, trader2TradeButton, false, false);
+
+        initCurrencies(trader1Currencies);
+        initCurrencies(trader2Currencies);
 
         trader1GUI = new GUIPairNode(main,
                 head1,
@@ -58,6 +64,8 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
                 trader1RawContents,
                 trader2RawContents,
                 trader1Currencies,
+                trader2Currencies,
+                normalizeForTrader(trader1),
                 this,
                 this);
         // REMEMBER that everything is reversed
@@ -69,6 +77,8 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
                 trader2RawContents,
                 trader1RawContents,
                 trader2Currencies,
+                trader1Currencies,
+                normalizeForTrader(trader2),
                 this,
                 this);
 
@@ -76,18 +86,46 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
         trader2GUI.setOtherGUI(trader1GUI);
     }
 
+    private void initCurrencies(Map<String, Double> traderCurrencies) {
+        GemsEconomyAPI api = main.api().getAPI(GemsEconomyAPI.class)
+                .orElseThrow(() -> new RuntimeException("Economy not found."));
+
+        api.getCurrencies().forEach(currency ->
+                traderCurrencies.put(currency.getPlural(), 0.0));
+    }
+
+    private BiFunction<String, Double, Double> normalizeForTrader(ITrader trader) {
+        GemsEconomyAPI api = main.api().getAPI(GemsEconomyAPI.class)
+                .orElseThrow(() -> new RuntimeException("Economy not found."));
+
+        // take the smaller value between current balance and amount selected
+        return (curr, amount) -> Math.max(0.0, Math.min(api.balance(trader.getUuid(), curr), amount));
+    }
+
     public void begin() {
         trader1.openTradeGUI(trader1GUI.getGUI());
         trader2.openTradeGUI(trader2GUI.getGUI());
     }
 
-    private Collection<ITradeContent> flat(Map<String, Double> currencies, ItemStack[] itemStacks) {
+    private Collection<ITradeContent> flat(ITrader currencyOwner,
+                                           Map<String, Double> currencies,
+                                           ItemStack[] itemStacks) {
         Collection<ITradeContent> contents = new LinkedList<>();
 
         currencies.forEach((key, val) ->
                 main.api().getAPI(GemsEconomyAPI.class)
-                        .map(api -> api.toTradingMaterial(key, val))
+                        .map(api -> api.toTradingContent(currencyOwner.getUuid(), key, val))
                         .ifPresent(contents::add));
+
+        Arrays.stream(itemStacks)
+                .map(TradingItemStack::new)
+                .forEach(contents::add);
+
+        return contents;
+    }
+
+    private Collection<ITradeContent> flat(ItemStack[] itemStacks) {
+        Collection<ITradeContent> contents = new LinkedList<>();
 
         Arrays.stream(itemStacks)
                 .map(TradingItemStack::new)
@@ -99,6 +137,7 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
     private void updateTradeButtomItem(ICommandSender sender, ItemStack item,
                                        boolean confirmed, boolean ready) {
         if (confirmed && ready) {
+            item.setType(Material.GREEN_STAINED_GLASS_PANE);
             InventoryUtil.parseFirstToItemTitle(main.lang(),
                     sender,
                     TradeGUILangs.GUI_Trade_Ready_Title,
@@ -106,8 +145,10 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
             InventoryUtil.parseToItemLores(main.lang(),
                     sender,
                     TradeGUILangs.GUI_Trade_Ready_Lore,
-                    item);
+                    item,
+                    true);
         } else if (confirmed) {
+            item.setType(Material.YELLOW_STAINED_GLASS_PANE);
             InventoryUtil.parseFirstToItemTitle(main.lang(),
                     sender,
                     TradeGUILangs.GUI_Trade_NotReady_Title,
@@ -115,8 +156,10 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
             InventoryUtil.parseToItemLores(main.lang(),
                     sender,
                     TradeGUILangs.GUI_Trade_NotReady_Lore2,
-                    item);
+                    item,
+                    true);
         } else {
+            item.setType(Material.YELLOW_STAINED_GLASS_PANE);
             InventoryUtil.parseFirstToItemTitle(main.lang(),
                     sender,
                     TradeGUILangs.GUI_Trade_NotReady_Title,
@@ -124,12 +167,13 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
             InventoryUtil.parseToItemLores(main.lang(),
                     sender,
                     TradeGUILangs.GUI_Trade_NotReady_Lore1,
-                    item);
+                    item,
+                    true);
         }
     }
 
     @Override
-    public void accept(GUIPairNode node, ItemClickData itemClickData) {
+    public void onTrade(GUIPairNode node, ItemClickData itemClickData) {
         if (node == trader1GUI) {
             trader1Ready = !trader1Ready && node.isConfirmed();
 
@@ -143,22 +187,74 @@ public class GUIPair implements GUIPairNode.CancelHandle, GUIPairNode.TradeHandl
         }
 
         if (trader1Ready && trader2Ready) {
-            // swap items
-            trader1.give(flat(trader2Currencies, trader2RawContents));
-            trader2.give(flat(trader1Currencies, trader1RawContents));
+            boolean tradable = verifyCurrency(trader1, trader1Currencies) && verifyCurrency(trader2, trader2Currencies);
+            try {
+                if (tradable) {
+                    // swap items and currencies
+                    trader1.give(flat(trader2, trader2Currencies, trader2RawContents));
+                    trader2.give(flat(trader1, trader1Currencies, trader1RawContents));
+                } else {
+                    main.lang().sendMessage(trader1, TradeGUILangs.Trade_Result_CurrencyMismatch);
+                    main.lang().sendMessage(trader2, TradeGUILangs.Trade_Result_CurrencyMismatch);
+                }
+            } finally {
+                // WARNING) must mark it end or onClose() will be called and will duplicate the items
+                end = true;
 
-            onTradeEnd.accept(this, node);
+                trader1.closeTradeGUI(trader1GUI.getGUI());
+                trader2.closeTradeGUI(trader2GUI.getGUI());
+
+                if (!tradable) {
+                    //Something went wrong. Restore items
+                    trader1.give(flat(trader1RawContents));
+                    trader2.give(flat(trader2RawContents));
+
+                    // caller of callback can see that the trade failed
+                    trader1Ready = trader2Ready = false;
+                }
+
+                onTradeEnd.accept(this);
+            }
         }
     }
 
-    @Override
-    public void accept(InventoryCloseEvent inventoryCloseEvent) {
-        // trade failed. Give items back to original owners
-        trader1.give(flat(trader1Currencies, trader1RawContents));
-        trader2.give(flat(trader2Currencies, trader2RawContents));
+    private boolean verifyCurrency(ITrader trader, Map<String, Double> traderCurrencies) {
+        GemsEconomyAPI api = main.api().getAPI(GemsEconomyAPI.class)
+                .orElseThrow(() -> new RuntimeException("Economy not found."));
 
-        onTradeEnd.accept(this, trader1GUI);
-        onTradeEnd.accept(this, trader2GUI);
+        for (Map.Entry<String, Double> entry : traderCurrencies.entrySet()) {
+            String currencyName = entry.getKey();
+            double amount = Math.max(0.0, entry.getValue());
+
+            if (Math.max(0.0, api.balance(trader.getUuid(), currencyName)) < amount)
+                return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public void onClose(GUIPairNode node, InventoryCloseEvent event) {
+        stopNow();
+    }
+
+    /**
+     * Cancel current trade right away.
+     */
+    public void stopNow() {
+        // WARNING) must be called once to avoid duplication (closeTradeGUI() will fire onClose() again)
+        if (end)
+            return; // so block it with boolean flag
+        end = true;
+
+        // currency doesn't have to be paid back since transaction never occurred
+        trader1.give(flat(trader1RawContents));
+        trader2.give(flat(trader2RawContents));
+
+        trader1.closeTradeGUI(trader1GUI.getGUI());
+        trader2.closeTradeGUI(trader2GUI.getGUI());
+
+        onTradeEnd.accept(this);
     }
 
     public ITrader getTrader1() {

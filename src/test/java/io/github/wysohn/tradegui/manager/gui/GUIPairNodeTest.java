@@ -7,6 +7,7 @@ import fr.minuskube.inv.content.SlotPos;
 import fr.minuskube.inv.opener.InventoryOpener;
 import io.github.wysohn.rapidframework2.core.main.PluginMain;
 import io.github.wysohn.rapidframework2.core.manager.lang.ManagerLanguage;
+import io.github.wysohn.tradegui.manager.gui.trade.GUIPairNode;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Server;
@@ -40,8 +41,9 @@ public class GUIPairNodeTest {
     private PluginMain mockMain;
     private ItemStack[] content1;
     private ItemStack[] content2;
-    private Map<String, Double> currencies;
-    private GUIPairNode.CancelHandle mockCancel;
+    private Map<String, Double> currencies1;
+    private Map<String, Double> currencies2;
+    private GUIPairNode.CloseHandle mockCancel;
     private GUIPairNode.TradeHandle mockTrade;
     private GUIPairNode node;
     private InventoryManager mockInventoryManager;
@@ -61,8 +63,9 @@ public class GUIPairNodeTest {
         ItemStack button = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
         content1 = new ItemStack[GUIPairNode.CONTENTS_ROW * GUIPairNode.CONTENTS_ROW];
         content2 = new ItemStack[GUIPairNode.CONTENTS_ROW * GUIPairNode.CONTENTS_ROW];
-        currencies = new HashMap<>();
-        mockCancel = mock(GUIPairNode.CancelHandle.class);
+        currencies1 = new HashMap<>();
+        currencies2 = new HashMap<>();
+        mockCancel = mock(GUIPairNode.CloseHandle.class);
         mockTrade = mock(GUIPairNode.TradeHandle.class);
 
         mockInventoryManager = mock(InventoryManager.class);
@@ -82,7 +85,9 @@ public class GUIPairNodeTest {
                 button,
                 content1,
                 content2,
-                currencies,
+                currencies1,
+                currencies2,
+                (curr, value) -> value,
                 mockCancel,
                 mockTrade);
         GUIPairNode mockOtherNode = mock(GUIPairNode.class);

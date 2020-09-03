@@ -6,6 +6,8 @@ import io.github.wysohn.tradegui.main.TradeGUILangs;
 import io.github.wysohn.tradegui.manager.trade.TradingManager;
 import io.github.wysohn.tradegui.manager.user.User;
 
+import java.util.function.Consumer;
+
 public class TradeMediator extends PluginMain.Mediator {
     private OfferScheduler offerScheduler;
 
@@ -13,7 +15,7 @@ public class TradeMediator extends PluginMain.Mediator {
 
     @Override
     public void enable() throws Exception {
-        offerScheduler = new OfferScheduler(main().task(), 60 * 1000L);
+        offerScheduler = new OfferScheduler(main().task(), WAITING_MILLIS);
         tradingManager = main().getManager(TradingManager.class).get();
     }
 
@@ -27,7 +29,7 @@ public class TradeMediator extends PluginMain.Mediator {
 
     }
 
-    public boolean requestTrade(User user, User target) {
+    public boolean requestTrade(User user, User target, Consumer<Boolean> fnResult) {
         if (tradingManager.isTrading(user) || tradingManager.isTrading(target))
             return false;
 
@@ -35,12 +37,15 @@ public class TradeMediator extends PluginMain.Mediator {
             main().lang().sendMessage(target, TradeGUILangs.Trade_Request_TimeLeft, (sen, man) ->
                     man.addInteger((int) (millis / 1000L)));
         }, () -> {
-            if (!tradingManager.startTrade(user, target)) {
+            if (!user.isOnline() || !target.isOnline())
+                return;
+
+            if (!tradingManager.startTrade(user, target, fnResult)) {
                 main().lang().sendMessage(target, TradeGUILangs.Trade_Request_AlreadyTrading);
             }
         }, () -> {
             main().lang().sendMessage(target, TradeGUILangs.Trade_Request_Timeout);
-        });
+        }, WAITING_MILLIS, WAITING_MILLIS / 2L, WAITING_MILLIS / 4L, 5000L, 4000L, 3000L, 2000L, 1000L);
     }
 
     public boolean acceptTrade(User user) {
@@ -50,4 +55,6 @@ public class TradeMediator extends PluginMain.Mediator {
     public boolean denyTrade(User user) {
         return offerScheduler.declineOffer(user);
     }
+
+    public static final long WAITING_MILLIS = 60 * 1000L;
 }

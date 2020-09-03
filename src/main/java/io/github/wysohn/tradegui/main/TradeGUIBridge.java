@@ -75,8 +75,22 @@ public class TradeGUIBridge extends BukkitPluginBridge {
 
                     getMain().getMediator(TradeMediator.class).ifPresent(tradeMediator -> {
                         getUser(sender.getUuid()).ifPresent(user -> {
-                            if (tradeMediator.requestTrade(user, target)) {
+                            if (tradeMediator.requestTrade(user, target, (result) -> {
+                                if (result) {
+                                    getMain().lang().sendMessage(sender, TradeGUILangs.Trade_Result_Success);
+                                    getMain().lang().sendMessage(target, TradeGUILangs.Trade_Result_Success);
+                                } else {
+                                    getMain().lang().sendMessage(sender, TradeGUILangs.Trade_Result_Cancelled);
+                                    getMain().lang().sendMessage(target, TradeGUILangs.Trade_Result_Cancelled);
+                                }
+                            })) {
                                 getMain().lang().sendMessage(user, TradeGUILangs.Command_Request_Sent);
+
+                                getMain().lang().sendMessage(target, DefaultLangs.General_Line);
+                                getMain().lang().sendMessage(target, TradeGUILangs.Command_Request_Received, (sen, langman) ->
+                                        langman.addString(sender.getDisplayName())
+                                                .addInteger((int) (TradeMediator.WAITING_MILLIS / 1000L)));
+                                getMain().lang().sendMessage(target, DefaultLangs.General_Line);
                             } else {
                                 getMain().lang().sendMessage(user, TradeGUILangs.Trade_Request_AlreadyTrading);
                             }
