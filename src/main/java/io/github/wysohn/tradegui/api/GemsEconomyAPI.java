@@ -1,7 +1,7 @@
 package io.github.wysohn.tradegui.api;
 
-import io.github.wysohn.rapidframework2.core.main.PluginMain;
-import io.github.wysohn.rapidframework2.core.manager.api.ExternalAPI;
+import io.github.wysohn.rapidframework3.core.api.ExternalAPI;
+import io.github.wysohn.rapidframework3.core.main.PluginMain;
 import io.github.wysohn.tradegui.manager.trade.ITradeContent;
 import io.github.wysohn.tradegui.manager.trade.ITrader;
 import io.github.wysohn.tradegui.manager.user.User;

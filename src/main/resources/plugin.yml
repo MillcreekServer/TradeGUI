@@ -8,20 +8,21 @@ permissions:
 name: TradeGUI
 main: io.github.wysohn.tradegui.main.TradeGUI
 softdepend:
-- RapidFramework
-- Vault
-- PlaceholderAPI
-- ProtocolLib
-- WorldGuard
-- SmartInvs
-- ScoreboardScreen
-- Citizens
-version: 1.0.1
+  - RapidFramework
+  - Vault
+  - PlaceholderAPI
+  - ProtocolLib
+  - WorldGuard
+  - SmartInvs
+  - ScoreboardScreen
+  - Citizens
+  - GemsEconomy
+version: 2.0.0
 commands:
   tradegui:
     aliases:
-    - tra
-    - trade
+      - tra
+      - trade
     description: description
 authors: [
-  ]
+]

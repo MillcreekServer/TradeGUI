@@ -1,23 +1,29 @@
 package io.github.wysohn.tradegui.manager.trade;
 
-import io.github.wysohn.rapidframework2.core.interfaces.IPluginObject;
-import io.github.wysohn.rapidframework2.core.main.PluginMain;
+import io.github.wysohn.rapidframework3.core.main.Manager;
+import io.github.wysohn.rapidframework3.core.main.PluginMain;
+import io.github.wysohn.rapidframework3.interfaces.IPluginObject;
 import io.github.wysohn.tradegui.manager.gui.trade.GUIPair;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-public class TradingManager extends PluginMain.Manager implements Listener {
+@Singleton
+public class TradingManager extends Manager implements Listener {
+    private final PluginMain main;
     private final Map<UUID, GUIPair> currentTrades = new HashMap<>();
 
-    public TradingManager(int loadPriority) {
-        super(loadPriority);
+    @Inject
+    public TradingManager(PluginMain main) {
+        this.main = main;
     }
 
     @Override
@@ -53,7 +59,7 @@ public class TradingManager extends PluginMain.Manager implements Listener {
         if (isTrading(initiated) || isTrading(accepted))
             return false;
 
-        GUIPair pair = new GUIPair(main(), initiated, accepted, (context) -> {
+        GUIPair pair = new GUIPair(main, initiated, accepted, (context) -> {
             currentTrades.remove(initiated.getUuid());
             currentTrades.remove(accepted.getUuid());
 

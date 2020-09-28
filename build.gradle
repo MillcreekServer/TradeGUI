@@ -15,7 +15,7 @@ plugins {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-project.version = '1.0.1'
+project.version = '2.0.0'
 
 ext {
     id = project.name
@@ -77,7 +77,8 @@ task writePluginYml {
             "WorldGuard",
             "SmartInvs",
             "ScoreboardScreen",
-            "Citizens"
+            "Citizens",
+            "GemsEconomy"
     ])
     map.put("depend", [])
     map.put("commands", new HashMap<String, Object>() {
@@ -138,7 +139,6 @@ task writeBaseCodes{
         packagePath.toFile().mkdirs()
 
     File mainFile = new File("$projectDir/templates/Main.java")
-    File bridgeFile = new File("$projectDir/templates/Bridge.java")
     File langFile = new File("$projectDir/templates/Langs.java")
 
     Map placeholders = [
@@ -146,7 +146,6 @@ task writeBaseCodes{
             "%pluginname%": id.toLowerCase(),
     ]
     replaceAndCopy(mainFile, Paths.get(packagePath.toString(), id + ".java"), placeholders)
-    replaceAndCopy(bridgeFile, Paths.get(packagePath.toString(), id + "Bridge.java"), placeholders)
     replaceAndCopy(langFile, Paths.get(packagePath.toString(), id + "Langs.java"), placeholders)
 }
 
@@ -238,7 +237,7 @@ dependencies {
     compile fileTree(dir: "libs", includes: ['*.jar'])
 
     implementation 'org.spigotmc:spigot-api:1.16.+'
-    implementation "io.github.wysohn:RapidFramework:2.17.0"
+    implementation "io.github.wysohn:RapidFramework:3.5.12"
 
     testCompile 'junit:junit:4.+'
     testCompile 'org.mockito:mockito-core:1.9.5'

@@ -1,7 +1,7 @@
 package io.github.wysohn.tradegui.manager.user;
 
 import fr.minuskube.inv.SmartInventory;
-import io.github.wysohn.rapidframework2.bukkit.main.objects.BukkitPlayer;
+import io.github.wysohn.rapidframework3.bukkit.data.BukkitPlayer;
 import io.github.wysohn.tradegui.manager.trade.ITradeContent;
 import io.github.wysohn.tradegui.manager.trade.ITrader;
 import org.bukkit.Material;

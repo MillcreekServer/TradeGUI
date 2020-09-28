@@ -4,10 +4,10 @@ import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.InventoryListener;
 import fr.minuskube.inv.SmartInventory;
 import fr.minuskube.inv.content.InventoryContents;
-import io.github.wysohn.rapidframework2.bukkit.main.objects.BukkitWrapper;
-import io.github.wysohn.rapidframework2.bukkit.utils.InventoryUtil;
-import io.github.wysohn.rapidframework2.core.main.PluginMain;
-import io.github.wysohn.rapidframework2.tools.Validation;
+import io.github.wysohn.rapidframework3.bukkit.data.BukkitWrapper;
+import io.github.wysohn.rapidframework3.bukkit.utils.InventoryUtil;
+import io.github.wysohn.rapidframework3.core.main.PluginMain;
+import io.github.wysohn.rapidframework3.utils.Validation;
 import io.github.wysohn.tradegui.main.TradeGUILangs;
 import io.github.wysohn.tradegui.manager.gui.AbstractGUI;
 import io.github.wysohn.tradegui.util.NumBuilder;
@@ -88,7 +88,7 @@ public class GUIAmountSelector extends AbstractGUI implements Consumer<Inventory
     }
 
     private ClickableItem numpadButton(int digit) {
-        ItemStack itemStack = new ItemStack(Material.SUNFLOWER, digit);
+        ItemStack itemStack = new ItemStack(Material.SUNFLOWER, Math.max(1, digit));
         ItemMeta meta = itemStack.getItemMeta();
         meta.setDisplayName(String.valueOf(digit));
         itemStack.setItemMeta(meta);

@@ -1,8 +1,8 @@
 package io.github.wysohn.tradegui.main;
 
-import io.github.wysohn.rapidframework2.core.manager.lang.Lang;
+import io.github.wysohn.rapidframework3.interfaces.language.ILang;
 
-public enum TradeGUILangs implements Lang {
+public enum TradeGUILangs implements ILang {
     GUI_Currency_Title("&dCurrencies"),
     GUI_Currency_Line("&f"),
     GUI_Currency_Format("&6${double} ${string}"),

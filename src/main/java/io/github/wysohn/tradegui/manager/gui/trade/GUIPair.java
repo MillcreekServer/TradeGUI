@@ -1,9 +1,9 @@
 package io.github.wysohn.tradegui.manager.gui.trade;
 
 import fr.minuskube.inv.ItemClickData;
-import io.github.wysohn.rapidframework2.bukkit.utils.InventoryUtil;
-import io.github.wysohn.rapidframework2.core.interfaces.entity.ICommandSender;
-import io.github.wysohn.rapidframework2.core.main.PluginMain;
+import io.github.wysohn.rapidframework3.bukkit.utils.InventoryUtil;
+import io.github.wysohn.rapidframework3.core.main.PluginMain;
+import io.github.wysohn.rapidframework3.interfaces.ICommandSender;
 import io.github.wysohn.tradegui.api.GemsEconomyAPI;
 import io.github.wysohn.tradegui.main.TradeGUILangs;
 import io.github.wysohn.tradegui.manager.trade.ITradeContent;
@@ -134,8 +134,9 @@ public class GUIPair implements GUIPairNode.CloseHandle, GUIPairNode.TradeHandle
         return contents;
     }
 
-    private void updateTradeButtomItem(ICommandSender sender, ItemStack item,
-                                       boolean confirmed, boolean ready) {
+    private void updateTradeButtomItem(
+            ICommandSender sender, ItemStack item,
+            boolean confirmed, boolean ready) {
         if (confirmed && ready) {
             item.setType(Material.GREEN_STAINED_GLASS_PANE);
             InventoryUtil.parseFirstToItemTitle(main.lang(),

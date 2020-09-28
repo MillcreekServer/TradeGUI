@@ -6,10 +6,10 @@ import fr.minuskube.inv.ItemClickData;
 import fr.minuskube.inv.SmartInventory;
 import fr.minuskube.inv.content.InventoryContents;
 import fr.minuskube.inv.content.SlotPos;
-import io.github.wysohn.rapidframework2.bukkit.main.objects.BukkitWrapper;
-import io.github.wysohn.rapidframework2.bukkit.utils.InventoryUtil;
-import io.github.wysohn.rapidframework2.core.main.PluginMain;
-import io.github.wysohn.rapidframework2.core.manager.lang.Lang;
+import io.github.wysohn.rapidframework3.bukkit.data.BukkitWrapper;
+import io.github.wysohn.rapidframework3.bukkit.utils.InventoryUtil;
+import io.github.wysohn.rapidframework3.core.main.PluginMain;
+import io.github.wysohn.rapidframework3.interfaces.language.ILang;
 import io.github.wysohn.tradegui.api.GemsEconomyAPI;
 import io.github.wysohn.tradegui.main.TradeGUILangs;
 import io.github.wysohn.tradegui.manager.gui.AbstractGUI;
@@ -53,17 +53,18 @@ public class GUIPairNode extends AbstractGUI implements Consumer<InventoryClickE
 
     private boolean confirmed = false;
 
-    public GUIPairNode(PluginMain main,
-                       ItemStack traderHeadItem,
-                       ItemStack otherHeadItem,
-                       ItemStack tradeButtonItem,
-                       ItemStack[] traderContents,
-                       ItemStack[] otherContents,
-                       Map<String, Double> traderCurrencies,
-                       Map<String, Double> otherCurrencies,
-                       BiFunction<String, Double, Double> currencyAdjustment,
-                       CloseHandle closeHandle,
-                       TradeHandle tradeHandle) {
+    public GUIPairNode(
+            PluginMain main,
+            ItemStack traderHeadItem,
+            ItemStack otherHeadItem,
+            ItemStack tradeButtonItem,
+            ItemStack[] traderContents,
+            ItemStack[] otherContents,
+            Map<String, Double> traderCurrencies,
+            Map<String, Double> otherCurrencies,
+            BiFunction<String, Double, Double> currencyAdjustment,
+            CloseHandle closeHandle,
+            TradeHandle tradeHandle) {
         this.main = main;
         this.traderHeadItem = traderHeadItem;
         this.otherHeadItem = otherHeadItem;
@@ -251,10 +252,10 @@ public class GUIPairNode extends AbstractGUI implements Consumer<InventoryClickE
     }
 
     private ItemStack confirmItem(Player player, boolean confirm, boolean trader) {
-        Lang title_confirm = trader ? TradeGUILangs.GUI_Confirm_Trader_Title : TradeGUILangs.GUI_Confirm_Other_Title;
-        Lang lore_confirm = trader ? TradeGUILangs.GUI_Confirm_Trader_Lore : TradeGUILangs.GUI_Confirm_Other_Lore;
-        Lang title_confirmed = trader ? TradeGUILangs.GUI_Confirmed_Trader_Title : TradeGUILangs.GUI_Confirmed_Other_Title;
-        Lang lore_confirmed = trader ? TradeGUILangs.GUI_Confirmed_Trader_Lore : TradeGUILangs.GUI_Confirmed_Other_Lore;
+        ILang title_confirm = trader ? TradeGUILangs.GUI_Confirm_Trader_Title : TradeGUILangs.GUI_Confirm_Other_Title;
+        ILang lore_confirm = trader ? TradeGUILangs.GUI_Confirm_Trader_Lore : TradeGUILangs.GUI_Confirm_Other_Lore;
+        ILang title_confirmed = trader ? TradeGUILangs.GUI_Confirmed_Trader_Title : TradeGUILangs.GUI_Confirmed_Other_Title;
+        ILang lore_confirmed = trader ? TradeGUILangs.GUI_Confirmed_Trader_Lore : TradeGUILangs.GUI_Confirmed_Other_Lore;
 
         ItemStack itemStack = new ItemStack(confirm ? Material.WRITTEN_BOOK : Material.WRITABLE_BOOK);
         InventoryUtil.parseFirstToItemTitle(main.lang(),

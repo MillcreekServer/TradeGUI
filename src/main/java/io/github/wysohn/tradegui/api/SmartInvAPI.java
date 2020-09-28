@@ -2,8 +2,8 @@ package io.github.wysohn.tradegui.api;
 
 import fr.minuskube.inv.SmartInventory;
 import fr.minuskube.inv.content.InventoryProvider;
-import io.github.wysohn.rapidframework2.core.main.PluginMain;
-import io.github.wysohn.rapidframework2.core.manager.api.ExternalAPI;
+import io.github.wysohn.rapidframework3.core.api.ExternalAPI;
+import io.github.wysohn.rapidframework3.core.main.PluginMain;
 
 public class SmartInvAPI extends ExternalAPI {
     public SmartInvAPI(PluginMain main, String pluginName) {
