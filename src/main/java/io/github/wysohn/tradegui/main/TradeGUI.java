@@ -9,8 +9,9 @@ import io.github.wysohn.rapidframework3.core.language.DefaultLangs;
 import io.github.wysohn.rapidframework3.core.main.PluginMainBuilder;
 import io.github.wysohn.rapidframework3.core.player.AbstractPlayerWrapper;
 import io.github.wysohn.rapidframework3.utils.Pair;
-import io.github.wysohn.tradegui.api.economy.RealEconomyAPI;
 import io.github.wysohn.tradegui.api.SmartInvAPI;
+import io.github.wysohn.tradegui.api.economy.RealEconomyAPI;
+import io.github.wysohn.tradegui.api.economy.VaultAPI;
 import io.github.wysohn.tradegui.inject.module.OfferSchedulerModule;
 import io.github.wysohn.tradegui.inject.module.WaitingTimeModule;
 import io.github.wysohn.tradegui.manager.EconomyMediator;
@@ -41,7 +42,8 @@ public class TradeGUI extends AbstractBukkitPlugin {
         pluginMainBuilder
                 .addModule(new LanguagesModule(TradeGUILangs.values()))
                 .addModule(new ExternalAPIModule(Pair.of("RealEconomy", RealEconomyAPI.class),
-                        Pair.of("SmartInv", SmartInvAPI.class)))
+                        Pair.of("SmartInv", SmartInvAPI.class),
+                        Pair.of("Vault", VaultAPI.class)))
                 .addModule(new ManagerModule(UserManager.class,
                         TradingManager.class))
                 .addModule(new MediatorModule(TradeMediator.class,
