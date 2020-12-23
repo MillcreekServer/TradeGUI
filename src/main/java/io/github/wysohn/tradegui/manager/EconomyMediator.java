@@ -2,8 +2,6 @@ package io.github.wysohn.tradegui.manager;
 
 import io.github.wysohn.rapidframework3.core.api.ManagerExternalAPI;
 import io.github.wysohn.rapidframework3.core.main.Mediator;
-import io.github.wysohn.rapidframework3.core.main.PluginMain;
-import io.github.wysohn.realeconomy.manager.currency.Currency;
 import io.github.wysohn.tradegui.api.economy.RealEconomyAPI;
 import io.github.wysohn.tradegui.api.economy.VaultAPI;
 import io.github.wysohn.tradegui.manager.trade.ITradeContent;
@@ -93,6 +91,7 @@ public class EconomyMediator extends Mediator implements IEconomyProvider {
         @Override
         public void visit(ITrader trader) {
             if (trader instanceof User) {
+                //TODO add recovery process for transaction failure
                 Player player = ((User) trader).getSender();
                 if (!withdraw(originalOwner, currency, amount))
                     throw new RuntimeException(String.format("Withdraw failure %s %s %f. Must check before transaction!",
