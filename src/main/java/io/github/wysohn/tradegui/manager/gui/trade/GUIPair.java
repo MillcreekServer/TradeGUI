@@ -4,8 +4,8 @@ import fr.minuskube.inv.ItemClickData;
 import io.github.wysohn.rapidframework3.bukkit.utils.InventoryUtil;
 import io.github.wysohn.rapidframework3.core.main.PluginMain;
 import io.github.wysohn.rapidframework3.interfaces.ICommandSender;
-import io.github.wysohn.tradegui.api.GemsEconomyAPI;
 import io.github.wysohn.tradegui.main.TradeGUILangs;
+import io.github.wysohn.tradegui.manager.EconomyMediator;
 import io.github.wysohn.tradegui.manager.trade.ITradeContent;
 import io.github.wysohn.tradegui.manager.trade.ITrader;
 import io.github.wysohn.tradegui.manager.trade.TradingItemStack;
@@ -87,19 +87,17 @@ public class GUIPair implements GUIPairNode.CloseHandle, GUIPairNode.TradeHandle
     }
 
     private void initCurrencies(Map<String, Double> traderCurrencies) {
-        GemsEconomyAPI api = main.api().getAPI(GemsEconomyAPI.class)
-                .orElseThrow(() -> new RuntimeException("Economy not found."));
-
-        api.getCurrencies().forEach(currency ->
-                traderCurrencies.put(currency.getPlural(), 0.0));
+        main.getMediator(EconomyMediator.class)
+                .map(EconomyMediator::getCurrencies)
+                .ifPresent(currencies -> currencies.forEach(currency -> traderCurrencies.put(currency, 0.0)));
     }
 
     private BiFunction<String, Double, Double> normalizeForTrader(ITrader trader) {
-        GemsEconomyAPI api = main.api().getAPI(GemsEconomyAPI.class)
-                .orElseThrow(() -> new RuntimeException("Economy not found."));
-
         // take the smaller value between current balance and amount selected
-        return (curr, amount) -> Math.max(0.0, Math.min(api.balance(trader.getUuid(), curr), amount));
+        return (curr, amount) -> Math.max(0.0, Math.min(main.getMediator(EconomyMediator.class)
+                        .map(mediator -> mediator.balance(trader.getUuid(), curr))
+                        .orElse(0.0),
+                amount));
     }
 
     public void begin() {
@@ -113,8 +111,8 @@ public class GUIPair implements GUIPairNode.CloseHandle, GUIPairNode.TradeHandle
         Collection<ITradeContent> contents = new LinkedList<>();
 
         currencies.forEach((key, val) ->
-                main.api().getAPI(GemsEconomyAPI.class)
-                        .map(api -> api.toTradingContent(currencyOwner.getUuid(), key, val))
+                main.getMediator(EconomyMediator.class)
+                        .map(mediator -> mediator.toTradingContent(currencyOwner.getUuid(), key, val))
                         .ifPresent(contents::add));
 
         Arrays.stream(itemStacks)
@@ -220,14 +218,14 @@ public class GUIPair implements GUIPairNode.CloseHandle, GUIPairNode.TradeHandle
     }
 
     private boolean verifyCurrency(ITrader trader, Map<String, Double> traderCurrencies) {
-        GemsEconomyAPI api = main.api().getAPI(GemsEconomyAPI.class)
-                .orElseThrow(() -> new RuntimeException("Economy not found."));
+        EconomyMediator mediator = main.getMediator(EconomyMediator.class)
+                .orElseThrow(RuntimeException::new);
 
         for (Map.Entry<String, Double> entry : traderCurrencies.entrySet()) {
             String currencyName = entry.getKey();
             double amount = Math.max(0.0, entry.getValue());
 
-            if (Math.max(0.0, api.balance(trader.getUuid(), currencyName)) < amount)
+            if (Math.max(0.0, mediator.balance(trader.getUuid(), currencyName)) < amount)
                 return false;
         }
 

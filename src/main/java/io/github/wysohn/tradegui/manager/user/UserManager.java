@@ -8,6 +8,7 @@ import io.github.wysohn.rapidframework3.core.inject.annotations.PluginLogger;
 import io.github.wysohn.rapidframework3.core.main.ManagerConfig;
 import io.github.wysohn.rapidframework3.interfaces.plugin.IShutdownHandle;
 import io.github.wysohn.rapidframework3.interfaces.serialize.ISerializer;
+import io.github.wysohn.rapidframework3.interfaces.serialize.ITypeAsserter;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -19,15 +20,15 @@ import java.util.logging.Logger;
 @Singleton
 public class UserManager extends AbstractUserManager<User> {
     @Inject
-    public UserManager(
-            @Named("pluginName") String pluginName,
-            @PluginLogger Logger logger,
-            ManagerConfig config,
-            @PluginDirectory File pluginDir,
-            IShutdownHandle shutdownHandle,
-            ISerializer serializer,
-            Injector injector) {
-        super(pluginName, logger, config, pluginDir, shutdownHandle, serializer, injector, User.class);
+    public UserManager(@Named("pluginName") String pluginName,
+                       @PluginLogger Logger logger,
+                       ManagerConfig config,
+                       @PluginDirectory File pluginDir,
+                       IShutdownHandle shutdownHandle,
+                       ISerializer serializer,
+                       ITypeAsserter asserter,
+                       Injector injector) {
+        super(pluginName, logger, config, pluginDir, shutdownHandle, serializer, asserter, injector, User.class);
     }
 
     @Override

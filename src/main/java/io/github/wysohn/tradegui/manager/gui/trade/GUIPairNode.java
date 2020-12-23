@@ -10,7 +10,7 @@ import io.github.wysohn.rapidframework3.bukkit.data.BukkitWrapper;
 import io.github.wysohn.rapidframework3.bukkit.utils.InventoryUtil;
 import io.github.wysohn.rapidframework3.core.main.PluginMain;
 import io.github.wysohn.rapidframework3.interfaces.language.ILang;
-import io.github.wysohn.tradegui.api.GemsEconomyAPI;
+import io.github.wysohn.tradegui.api.economy.RealEconomyAPI;
 import io.github.wysohn.tradegui.main.TradeGUILangs;
 import io.github.wysohn.tradegui.manager.gui.AbstractGUI;
 import io.github.wysohn.tradegui.manager.gui.amount.GUIAmountSelector;
@@ -122,7 +122,7 @@ public class GUIPairNode extends AbstractGUI implements Consumer<InventoryClickE
 
         //1,1 -> 1,3  left currencies
         contents.set(1, 2, ClickableItem.from(currencyItem(player, Material.PAPER, traderCurrencies), data -> {
-            main.api().getAPI(GemsEconomyAPI.class).ifPresent(api -> {
+            main.api().getAPI(RealEconomyAPI.class).ifPresent(api -> {
                 if (!confirmed) {
                     if (traderCurrencies.size() > 0) {
                         GUIAmountSelector selector = new GUIAmountSelector(main,
