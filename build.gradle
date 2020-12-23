@@ -15,7 +15,7 @@ plugins {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-project.version = '2.1.0'
+project.version = '2.1.1'
 
 ext {
     id = project.name
@@ -70,7 +70,7 @@ task writePluginYml {
     map.put("author", project.ext.author)
     map.put("authors", project.ext.authors)
     map.put("softdepend", [
-            "RapidFramework",
+            "rapidframework",
             "Vault",
             "PlaceholderAPI",
             "ProtocolLib",
