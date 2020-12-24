@@ -7,6 +7,7 @@ import fr.minuskube.inv.content.SlotPos;
 import fr.minuskube.inv.opener.InventoryOpener;
 import io.github.wysohn.rapidframework3.core.language.ManagerLanguage;
 import io.github.wysohn.rapidframework3.core.main.PluginMain;
+import io.github.wysohn.rapidframework3.interfaces.ICommandSender;
 import io.github.wysohn.tradegui.manager.gui.trade.GUIPairNode;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -57,6 +58,7 @@ public class GUIPairNodeTest {
 
         when(mockMain.lang()).thenReturn(mockLanguageManager);
         when(mockLanguageManager.parse(any(), any(), any())).thenReturn(new String[0]);
+        when(mockLanguageManager.parseFirst(any(ICommandSender.class), any())).thenReturn("");
 
         ItemStack head1 = new ItemStack(Material.PLAYER_HEAD);
         ItemStack head2 = new ItemStack(Material.PLAYER_HEAD);
