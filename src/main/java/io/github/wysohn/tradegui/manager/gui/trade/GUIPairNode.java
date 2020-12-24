@@ -244,7 +244,8 @@ public class GUIPairNode extends AbstractGUI implements Consumer<InventoryClickE
                                     langman.addDouble(value).addString(currency))));
         });
         lore.add("");
-        lore.add(main.lang().parseFirst(BukkitWrapper.player(player), TradeGUILangs.GUI_Currency_ClickToEdit));
+        lore.add(ChatColor.translateAlternateColorCodes('&',
+                main.lang().parseFirst(BukkitWrapper.player(player), TradeGUILangs.GUI_Currency_ClickToEdit)));
         meta.setLore(lore);
         itemStack.setItemMeta(meta);
 
