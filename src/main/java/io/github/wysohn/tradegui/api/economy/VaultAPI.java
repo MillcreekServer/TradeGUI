@@ -40,8 +40,8 @@ public class VaultAPI extends ExternalAPI implements IEconomyProvider {
     @Override
     public List<String> getCurrencies() {
         // vault doesn't support multi-currency
-        // just return something arbitrary
-        return Collections.singletonList("server default");
+        // empty string
+        return Collections.singletonList("");
     }
 
     @Override

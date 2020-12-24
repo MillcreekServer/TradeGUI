@@ -15,7 +15,7 @@ plugins {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-project.version = '2.1.3'
+project.version = '2.1.4'
 
 ext {
     id = project.name
