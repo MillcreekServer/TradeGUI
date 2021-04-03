@@ -15,7 +15,7 @@ plugins {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-project.version = '2.1.6'
+project.version = '2.2.0'
 
 ext {
     id = project.name
@@ -206,6 +206,13 @@ repositories {
             password = gh_token
         }
     }
+    maven {
+        url "https://maven.pkg.github.com/millcreekserver/realeconomy"
+        credentials {
+            username = gh_username
+            password = gh_token
+        }
+    }
     maven{
         url "http://repo.citizensnpcs.co/"
     }
@@ -241,6 +248,7 @@ dependencies {
 
     implementation 'org.spigotmc:spigot-api:1.16.+'
     implementation "io.github.wysohn:rapidframework:3.14.3"
+    implementation "io.github.wysohn:realeconomy:1.19.9"
     implementation "com.github.MilkBowl:VaultAPI:1.7"
 
     testCompile 'junit:junit:4.+'
